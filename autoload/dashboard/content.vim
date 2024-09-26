@@ -12,12 +12,14 @@ const vim_header = [
 
 def PaintHeader()
     var header = exists("g:vim_dashboard_custom_header") ? g:vim_dashboard_custom_header : vim_header
-    var maxLineLength = MaxLineLength(header)
-    const padding = CalcPadding(maxLineLength)
+    const padding = CalcPadding(MaxLineLength(header))
     call CenterLines(['', ''], padding)
     call CenterLines(header, padding)
+    const tips = ' Edit[i]   Files[f]   Config[c]   History[h]   Quit[q]'
+    cal CenterLines([tips], CalcPadding(strchars(tips)))
     call CenterLines(['', ''], padding)
 enddef
+
 
 var dashboard = {'entries': {} }
 
@@ -84,7 +86,6 @@ def MaxLineLength(lines: list<string>): number
     return max_length
 enddef
 
-defcompile MaxLineLength
 
 def PaintRecentFiles(initEntries: number)
     var lines = GetRecentFiles()
@@ -99,8 +100,11 @@ def DashBoardEntryFormat(entry_path: string): string
     # 这里依赖vim-devicons插件，需要在加载这个插件之后才能使用
     # 这里会加载文件对应的图标
     if exists('*WebDevIconsGetFileTypeSymbol')
+        echomsg "WebDevIconsGetFileTypeSymbol"
+        echomsg "WebDevIcons" .. entry_path
         return g:WebDevIconsGetFileTypeSymbol(entry_path) .. ' ' .. entry_path
     else
+        echomsg "No WebDevIconsGetFileTypeSymbol"
         return entry_path
     endif
 enddef
@@ -109,4 +113,5 @@ export def BufIsEmpty(bufNo: number): bool
   return line('$') == 1 && getline(1) == ''
 enddef
 
+defcompile MaxLineLength
 
