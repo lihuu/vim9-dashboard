@@ -1,7 +1,4 @@
 
-
-highlight MyHighlight ctermfg=yellow ctermbg=NONE guifg=yellow guibg=NONE
-
 let s:header = [
       \ '██╗     ██╗██╗  ██╗██╗   ██╗██╗   ██╗██╗███╗   ███╗',
       \ '██║     ██║██║  ██║██║   ██║██║   ██║██║████╗ ████║',
@@ -11,12 +8,24 @@ let s:header = [
       \ '╚══════╝╚═╝╚═╝  ╚═╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝',
       \ '']
 
+let s:vim_header = [
+\ '██╗   ██╗██╗███╗   ███╗ █████╗ ',
+\ '██║   ██║██║████╗ ████║██╔══██╗',
+\ '██║   ██║██║██╔████╔██║╚██████║',
+\ '╚██╗ ██╔╝██║██║╚██╔╝██║ ╚═══██║',
+\ ' ╚████╔╝ ██║██║ ╚═╝ ██║ █████╔╝',
+\ '  ╚═══╝  ╚═╝╚═╝     ╚═╝ ╚════╝ ',
+\ '',
+\ '' ]
+
+
 
 function! dashboard#content#paintHeader() abort
-  let l:maxLineLength= dashboard#utils#maxLineLength(s:header)
+  let l:header = exists("g:vim_dashboard_custom_header") ? g:vim_dashboard_custom_header : s:vim_header
+  let l:maxLineLength= dashboard#utils#maxLineLength(l:header)
   let l:padding = s:calcPadding(l:maxLineLength)
   call dashboard#utils#centerLines(['',''], l:padding)
-  call dashboard#utils#centerLines(s:header,l:padding)
+  call dashboard#utils#centerLines(l:header,l:padding)
   call dashboard#utils#centerLines(['',''], l:padding)
 endfunction
 
