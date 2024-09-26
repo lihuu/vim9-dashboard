@@ -1,105 +1,92 @@
+vim9script
 
-let s:header = [
-      \ '██╗     ██╗██╗  ██╗██╗   ██╗██╗   ██╗██╗███╗   ███╗',
-      \ '██║     ██║██║  ██║██║   ██║██║   ██║██║████╗ ████║',
-      \ '██║     ██║███████║██║   ██║██║   ██║██║██╔████╔██║',
-      \ '██║     ██║██╔══██║██║   ██║╚██╗ ██╔╝██║██║╚██╔╝██║',
-      \ '███████╗██║██║  ██║╚██████╔╝ ╚████╔╝ ██║██║ ╚═╝ ██║',
-      \ '╚══════╝╚═╝╚═╝  ╚═╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝',
-      \ '']
+const vim_header = [
+ '██╗   ██╗██╗███╗   ███╗ █████╗ ',
+ '██║   ██║██║████╗ ████║██╔══██╗',
+ '██║   ██║██║██╔████╔██║╚██████║',
+ '╚██╗ ██╔╝██║██║╚██╔╝██║ ╚═══██║',
+ ' ╚████╔╝ ██║██║ ╚═╝ ██║ █████╔╝',
+ '  ╚═══╝  ╚═╝╚═╝     ╚═╝ ╚════╝ ',
+ '',
+ '' ]
 
-let s:vim_header = [
-\ '██╗   ██╗██╗███╗   ███╗ █████╗ ',
-\ '██║   ██║██║████╗ ████║██╔══██╗',
-\ '██║   ██║██║██╔████╔██║╚██████║',
-\ '╚██╗ ██╔╝██║██║╚██╔╝██║ ╚═══██║',
-\ ' ╚████╔╝ ██║██║ ╚═╝ ██║ █████╔╝',
-\ '  ╚═══╝  ╚═╝╚═╝     ╚═╝ ╚════╝ ',
-\ '',
-\ '' ]
+def PaintHeader()
+  var header = exists("g:vim_dashboard_custom_header") ? g:vim_dashboard_custom_header : vim_header
+  var maxLineLength = dashboard#utils#maxLineLength(header)
+  const padding = CalcPadding(maxLineLength)
+  call dashboard#utils#centerLines(['', ''], padding)
+  call dashboard#utils#centerLines(header, padding)
+  call dashboard#utils#centerLines(['', ''], padding)
+enddef
 
+var dashboard = {'entries': {} }
 
-
-function! dashboard#content#paintHeader() abort
-  let l:header = exists("g:vim_dashboard_custom_header") ? g:vim_dashboard_custom_header : s:vim_header
-  let l:maxLineLength= dashboard#utils#maxLineLength(l:header)
-  let l:padding = s:calcPadding(l:maxLineLength)
-  call dashboard#utils#centerLines(['',''], l:padding)
-  call dashboard#utils#centerLines(l:header,l:padding)
-  call dashboard#utils#centerLines(['',''], l:padding)
-endfunction
-
-let b:dashboard = {'entries':{} }
-
-function! s:centerLines(lines,padding,initEntries)
-  for line in a:lines
-    let centered_line = repeat(' ', a:padding) . s:dashBoardEntryFormat(line)
+def CenterLines(lines: list<string>, padding: number, initEntries: any)
+  for line in lines
+    var centered_line = repeat(' ', padding) .. DashBoardEntryFormat(line)
     call append('$', centered_line)
-    if a:initEntries == 1
-      let b:dashboard.entries[line('$')] = line
+    if initEntries == 1
+      dashboard.entries[line('$')] = line
     endif
   endfor
-endfunction
+enddef
 
-function s:calcPadding(length) abort
-  let l:width = winwidth(0)
-  return max([0, (l:width - a:length) / 2])
-endfunction
+def CalcPadding(length: number): number
+  const width = winwidth(0)
+  return max([0, (width - length) / 2])
+enddef
 
-function! dashboard#content#paintDashBoard(initEntries)
-  " 在这里绘制需要展示的图形
+
+export def PaintDashBoard(initEntries: number)
+  # 在这里绘制需要展示的图形
   if !&modifiable
     setlocal modifiable
   endif
   if !dashboard#utils#buf_is_empty(0)
-    silent! %d _
+    silent! :%d _
   endif
-  call dashboard#content#paintHeader()
-  call dashboard#content#paintRecentFiles(a:initEntries)
+  PaintHeader()
+  PaintRecentFiles(initEntries)
   silent! setlocal nomodified nomodifiable
-endfunction
+enddef
 
-nnoremap <buffer><nowait><silent> <cr> :call OpenBuffers()<cr>
-
-function! OpenBuffers(...) abort
-  let l:filePath = substitute(get(b:dashboard.entries,line('.'),''),"\\","/","g")
-  if l:filePath != ''
-    execute 'edit ' . l:filePath
+def g:OpenBuffers() 
+  var filePath = substitute(get(dashboard.entries, line('.'), ''), "\\", "/", "g")
+  if filePath != ''
+    execute 'edit ' .. filePath
   endif
-endfunction
+enddef
 
+def GetRecentFiles(): list<string>
+  var recent_files = v:oldfiles
 
-function! s:GetRecentFiles()
-  let recent_files = v:oldfiles
-
-  let file_list = []
-  let maxSize = 10
+  var file_list = []
+  var maxSize = 10
   for item in recent_files
-    if item != '' && len(file_list)< maxSize 
+    if item != '' && len(file_list) < maxSize 
       call add(file_list, item)
     endif
   endfor
-
   return file_list
-endfunction
+enddef
 
-function! dashboard#content#paintRecentFiles(initEntries) abort
-  let l:lines = s:GetRecentFiles()
-  let l:maxLength = dashboard#utils#maxLineLength(l:lines)
-  let l:padding = max([0, (winwidth(0) - l:maxLength) / 2])
-  call append("$", repeat(" ", l:padding-4) . "Recent files:")
-  call s:centerLines(l:lines,l:padding,a:initEntries)
-endfunction
+def PaintRecentFiles(initEntries: number)
+  var lines = GetRecentFiles()
+  var maxLength = dashboard#utils#maxLineLength(lines)
+  var padding = max([0, (winwidth(0) - maxLength) / 2])
+  call append("$", repeat(" ", padding - 4) .. "Recent files:")
+  call CenterLines(lines, padding, initEntries)
+enddef
 
 
-function! s:dashBoardEntryFormat(entry_path) abort
-  " 这里依赖vim-devicons插件，需要在加载这个插件之后才能使用
-  " 这里会加载文件对应的图标
+def DashBoardEntryFormat(entry_path: string): string
+  # 这里依赖vim-devicons插件，需要在加载这个插件之后才能使用
+  # 这里会加载文件对应的图标
   if exists('*WebDevIconsGetFileTypeSymbol')
-    return WebDevIconsGetFileTypeSymbol(a:entry_path) . ' ' . a:entry_path
+    return g:WebDevIconsGetFileTypeSymbol(entry_path) .. ' ' .. entry_path
   else
-    return a:entry_path
+    return entry_path
   endif
-endfunction
+enddef
 
 

@@ -1,6 +1,5 @@
 
 function! dashboard#utils#buf_is_empty(bufnr) abort
-  let l:bufnr = a:bufnr ? a:bufnr : 0
   return line('$') == 1 && getline(1) == ''
 endfunction
 

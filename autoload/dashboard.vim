@@ -1,25 +1,9 @@
-function! s:buf_is_empty(bufnr) abort
-    let l:bufnr = a:bufnr ? a:bufnr : 0
-    return line('$') == 1 && getline(1) == ''
-endfunction
+vim9script
 
+import './dashboard/content.vim' as Content
 
-function! s:GetRecentFiles()
-    let recent_files = v:oldfiles
-
-    let file_list = []
-    let maxSize = 10
-    for item in recent_files
-        if item != '' && len(file_list)< maxSize 
-            call add(file_list, item)
-        endif
-    endfor
-
-    return file_list
-endfunction
-
-function! dashboard#instance() abort
-    let mode = mode()
+export def DashboardInstance()
+    var mode = mode()
     if  mode == 'i' && !&modifiable
         return
     endif
@@ -29,14 +13,15 @@ function! dashboard#instance() abort
         return
     endif
 
-    if s:buf_is_empty(0)
-        let buf=bufnr('%')
+    var buf: number
+    if dashboard#utils#buf_is_empty(0)
+        buf = bufnr('%')
     else
-        let buf=bufnr('%',1)
+        buf = bufnr('%', 1)
     endif
 
-    let win_id = win_getid()
-    call win_execute(win_id, 'buffer ' . buf)
+    const win_id = win_getid()
+    call win_execute(win_id, 'buffer ' .. buf)
 
     silent! setlocal
                 \ bufhidden=wipe
@@ -57,15 +42,12 @@ function! dashboard#instance() abort
                 \ filetype=dashboard
                 \ statusline=dashboard
 
-    " 在这里绘制需要展示的图形
-    call dashboard#content#paintDashBoard(1)
-    " 设置buf为未修改状态以及当前buffer为只读
-endfunction
+    call Content.PaintDashBoard(1)
+  enddef
 
-
-function! dashboard#resize()
+export def DashboardResize()
     if &filetype == 'dashboard'
-      call dashboard#content#paintDashBoard(0)
+      call Content.PaintDashBoard(0)
     endif
-endfunction
+enddef
 
