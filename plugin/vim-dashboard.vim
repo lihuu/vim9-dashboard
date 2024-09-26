@@ -23,6 +23,9 @@ enddef
 
 
 nnoremap <buffer><nowait><silent> <cr> :call OpenBuffers()<cr>
+nnoremap <buffer><nowait><silent> i :enew <bar> startinsert<cr>
+nnoremap <buffer><nowait><silent> e :enew <bar> startinsert<cr>
+nnoremap <buffer><nowait><silent> q :q<cr>
 
 
 

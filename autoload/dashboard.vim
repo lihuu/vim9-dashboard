@@ -14,7 +14,7 @@ export def DashboardInstance()
     endif
 
     var buf: number
-    if dashboard#utils#buf_is_empty(0)
+    if Content.BufIsEmpty(0)
         buf = bufnr('%')
     else
         buf = bufnr('%', 1)
