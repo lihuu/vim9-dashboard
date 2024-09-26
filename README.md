@@ -1,1 +1,1 @@
-# vim-dashboard
+# vim9-dashboard
