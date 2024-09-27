@@ -25,7 +25,7 @@ var dashboard = {'entries': {} }
 
 def CenterLines(lines: list<string>, padding: number, initEntries: number = 1)
     for line in lines
-        var centered_line = repeat(' ', padding) .. DashBoardEntryFormat(line)
+        var centered_line = repeat(' ', padding) .. line
         call append('$', centered_line)
         if initEntries == 1
             dashboard.entries[line('$')] = line
@@ -40,7 +40,6 @@ enddef
 
 
 export def PaintDashBoard(initEntries: number)
-    # 在这里绘制需要展示的图形
     if !&modifiable
         setlocal modifiable
     endif
@@ -63,10 +62,13 @@ def GetRecentFiles(): list<string>
     var recent_files = v:oldfiles
 
     var file_list = []
-    var maxSize = 10
+    var maxSize = exists("g:dashboard_recent_files_max_size") ? g:dashboard_recent_files_max_size : 10
+    var index = 0
     for item in recent_files
         if item != '' && len(file_list) < maxSize 
-            call add(file_list, item)
+            echomsg item
+            call add(file_list, '[' .. index .. ']' .. DashBoardEntryFormat(item))
+            index += 1
         endif
     endfor
     return file_list
@@ -97,17 +99,17 @@ enddef
 
 
 def DashBoardEntryFormat(entry_path: string): string
-    # 这里依赖vim-devicons插件，需要在加载这个插件之后才能使用
-    # 这里会加载文件对应的图标
-    if exists('*WebDevIconsGetFileTypeSymbol')
-        echomsg "WebDevIconsGetFileTypeSymbol"
-        echomsg "WebDevIcons" .. entry_path
+    # In a compiled |:def| function the evaluation is done at runtime.  
+    # Use `exists_compiled()` to evaluate the expression at compile time.
+    if exists_compiled('g:WebDevIconsGetFileTypeSymbol')
+        # check if the vim-devicons plugin is loaded. This function is provided by the plugin and is
+        # used to get the icon for a file type.
         return g:WebDevIconsGetFileTypeSymbol(entry_path) .. ' ' .. entry_path
     else
-        echomsg "No WebDevIconsGetFileTypeSymbol"
         return entry_path
     endif
 enddef
+defcompile DashBoardEntryFormat
 
 export def BufIsEmpty(bufNo: number): bool
   return line('$') == 1 && getline(1) == ''
