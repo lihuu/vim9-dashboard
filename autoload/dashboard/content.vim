@@ -16,16 +16,21 @@ def PaintHeader()
     call CenterLines(['', ''], padding)
     call CenterLines(header, padding)
     const tips = ' Edit[i]   Files[f]   Config[c]   History[h]   Quit[q]'
+    matchadd('DashboardOperationEdit', "/Edit/")
+    matchadd('DashboardOperationFile', "Files")
+    matchadd('DashboardOperationConfig', "Config")
+    matchadd('DashboardOperationHistory', "History")
+    matchadd('DashboardOperationQuit', "Quit")
+
     cal CenterLines([tips], CalcPadding(strchars(tips)))
     call CenterLines(['', ''], padding)
 enddef
 
-
 var dashboard = {'entries': {} }
 
-def CenterLines(lines: list<string>, padding: number, initEntries: number = 1)
+def CenterLines(lines: list<string>, padding: number, initEntries: number = 1, addIcon: number = 0)
     for line in lines
-        var centered_line = repeat(' ', padding) .. line
+        var centered_line = repeat(' ', padding) .. (addIcon == 1 ? DashBoardEntryFormat(line) : line)
         call append('$', centered_line)
         if initEntries == 1
             dashboard.entries[line('$')] = line
@@ -47,7 +52,7 @@ export def PaintDashBoard(initEntries: number)
         silent! :%d _
     endif
     PaintHeader()
-    PaintRecentFiles(initEntries)
+    PrintRecentFiles(initEntries)
     silent! setlocal nomodified nomodifiable
 enddef
 
@@ -60,14 +65,12 @@ enddef
 
 def GetRecentFiles(): list<string>
     var recent_files = v:oldfiles
-
     var file_list = []
     var maxSize = exists("g:dashboard_recent_files_max_size") ? g:dashboard_recent_files_max_size : 10
     var index = 0
     for item in recent_files
         if item != '' && len(file_list) < maxSize 
-            echomsg item
-            call add(file_list, '[' .. index .. ']' .. DashBoardEntryFormat(item))
+            call add(file_list, item)
             index += 1
         endif
     endfor
@@ -88,15 +91,19 @@ def MaxLineLength(lines: list<string>): number
     return max_length
 enddef
 
-
-def PaintRecentFiles(initEntries: number)
+def PrintRecentFiles(initEntries: number)
     var lines = GetRecentFiles()
     var maxLength = MaxLineLength(lines)
     var padding = max([0, (winwidth(0) - maxLength) / 2])
     call append("$", repeat(" ", padding - 4) .. "Recent files:")
-    call CenterLines(lines, padding, initEntries)
+    for line in lines
+        var centered_line = repeat(' ', padding) .. DashBoardEntryFormat(line)
+        call append('$', centered_line)
+        if initEntries == 1
+            dashboard.entries[line('$')] = line
+        endif
+    endfor
 enddef
-
 
 def DashBoardEntryFormat(entry_path: string): string
     # In a compiled |:def| function the evaluation is done at runtime.  
