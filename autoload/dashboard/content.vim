@@ -10,18 +10,13 @@ const vim_header = [
     '',
     '' ]
 
+const tips = ' Edit[i]   Files[f]   Config[c]   History[h]   Quit[q]'
+
 def PaintHeader()
     var header = exists("g:vim_dashboard_custom_header") ? g:vim_dashboard_custom_header : vim_header
     const padding = CalcPadding(MaxLineLength(header))
     call CenterLines(['', ''], padding)
     call CenterLines(header, padding)
-    const tips = ' Edit[i]   Files[f]   Config[c]   History[h]   Quit[q]'
-    matchadd('DashboardOperationEdit', "/Edit/")
-    matchadd('DashboardOperationFile', "Files")
-    matchadd('DashboardOperationConfig', "Config")
-    matchadd('DashboardOperationHistory', "History")
-    matchadd('DashboardOperationQuit', "Quit")
-
     cal CenterLines([tips], CalcPadding(strchars(tips)))
     call CenterLines(['', ''], padding)
 enddef
@@ -94,11 +89,13 @@ enddef
 def PrintRecentFiles(initEntries: number)
     var lines = GetRecentFiles()
     var maxLength = MaxLineLength(lines)
-    var padding = max([0, (winwidth(0) - maxLength) / 2])
-    call append("$", repeat(" ", padding - 4) .. "Recent files:")
+    var padding = max([0, (winwidth(0) - strchars(tips)) / 2])
+    call append("$", repeat(" ", padding) .. "MRU:")
+    var index = 0
     for line in lines
-        var centered_line = repeat(' ', padding) .. DashBoardEntryFormat(line)
+        var centered_line = repeat(' ', padding) .. "[" .. index .. "] " .. DashBoardEntryFormat(line)
         call append('$', centered_line)
+        index += 1
         if initEntries == 1
             dashboard.entries[line('$')] = line
         endif
@@ -111,7 +108,7 @@ def DashBoardEntryFormat(entry_path: string): string
     if exists_compiled('g:WebDevIconsGetFileTypeSymbol')
         # check if the vim-devicons plugin is loaded. This function is provided by the plugin and is
         # used to get the icon for a file type.
-        return g:WebDevIconsGetFileTypeSymbol(entry_path) .. ' ' .. entry_path
+        return g:WebDevIconsGetFileTypeSymbol(entry_path) .. entry_path
     else
         return entry_path
     endif
@@ -119,7 +116,7 @@ enddef
 defcompile DashBoardEntryFormat
 
 export def BufIsEmpty(bufNo: number): bool
-  return line('$') == 1 && getline(1) == ''
+    return line('$') == 1 && getline(1) == ''
 enddef
 
 defcompile MaxLineLength
