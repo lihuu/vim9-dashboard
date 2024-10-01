@@ -15,23 +15,25 @@ const tips = ' Edit[i]   Files[f]   Config[c]   History[h]   Quit
 def PaintHeader()
     var header = exists("g:vim_dashboard_custom_header") ? g:vim_dashboard_custom_header : vim_header
     const padding = CalcPadding(MaxLineLength(header))
-    call CenterLines(['', ''], padding)
-    call CenterLines(header, padding)
-    cal CenterLines([tips], CalcPadding(strchars(tips)))
-    call CenterLines(['', ''], padding)
+    PaddingLines(['', ''], padding)
+    PaddingLines(header, padding)
+    PaddingLines([tips], CalcPadding(strchars(tips)))
+    PaddingLines(['', ''], padding)
 enddef
 
 var dashboard = {'entries': {} }
 
-def CenterLines(lines: list<string>, padding: number, initEntries: number = 1, addIcon: number = 0)
+def PaddingLines(lines: list<string>, padding: number )
     for line in lines
-        var centered_line = repeat(' ', padding) .. (addIcon == 1 ? DashBoardEntryFormat(line) : line)
-        call append('$', centered_line)
-        if initEntries == 1
-            dashboard.entries[line('$')] = line
-        endif
+        PringPaddingLine(line, padding)
     endfor
 enddef
+
+def PringPaddingLine(line: string, padding: number)
+    var centered_line = repeat(' ', padding) .. line
+    append('$', centered_line)
+enddef
+
 
 def CalcPadding(length: number): number
     const width = winwidth(0)
@@ -65,7 +67,7 @@ def GetRecentFiles(): list<string>
     var index = 0
     for item in recent_files
         if item != '' && len(file_list) < maxSize 
-            call add(file_list, item)
+            add(file_list, item)
             index += 1
         endif
     endfor
@@ -90,11 +92,11 @@ def PrintRecentFiles(initEntries: number)
     var lines = GetRecentFiles()
     var maxLength = MaxLineLength(lines)
     var padding = max([0, (winwidth(0) - strchars(tips)) / 2])
-    call append("$", repeat(" ", padding) .. "MRU:")
+    append("$", repeat(" ", padding) .. "MRU:")
     var index = 0
     for line in lines
         var centered_line = repeat(' ', padding) .. "[" .. index .. "] " .. DashBoardEntryFormat(line)
-        call append('$', centered_line)
+        append('$', centered_line)
         index += 1
         if initEntries == 1
             dashboard.entries[line('$')] = line
