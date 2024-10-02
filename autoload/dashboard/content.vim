@@ -21,15 +21,15 @@ def PaintHeader()
     PaddingLines(['', ''], padding)
 enddef
 
-var dashboard = {'entries': {} }
+var dashboard = {'entries': {}, 'offset': 0}
 
 def PaddingLines(lines: list<string>, padding: number )
     for line in lines
-        PringPaddingLine(line, padding)
+        PrintPaddingLine(line, padding)
     endfor
 enddef
 
-def PringPaddingLine(line: string, padding: number)
+def PrintPaddingLine(line: string, padding: number)
     var centered_line = repeat(' ', padding) .. line
     append('$', centered_line)
 enddef
@@ -53,11 +53,17 @@ export def PaintDashBoard(initEntries: number)
     silent! setlocal nomodified nomodifiable
 enddef
 
-def g:OpenBuffers() 
-    var filePath = substitute(get(dashboard.entries, line('.'), ''), "\\", "/", "g")
-    if filePath != ''
-        execute 'edit ' .. filePath
+def g:OpenBuffers(index: number = -1) 
+    var fileIndex = 0
+    if index < 0
+        fileIndex = line('.')
+    else
+        fileIndex = index + dashboard.offset + 1
     endif
+        var filePath = substitute(get(dashboard.entries, fileIndex, ''), "\\", "/", "g")
+        if filePath != ''
+            execute 'edit ' .. filePath
+        endif
 enddef
 
 def GetRecentFiles(): list<string>
@@ -94,13 +100,15 @@ def PrintRecentFiles(initEntries: number)
     var padding = max([0, (winwidth(0) - strchars(tips)) / 2])
     append("$", repeat(" ", padding) .. "MRU:")
     var index = 0
+    dashboard.offset = line('$')
     for line in lines
         var centered_line = repeat(' ', padding) .. "[" .. index .. "] " .. DashBoardEntryFormat(line)
         append('$', centered_line)
-        index += 1
         if initEntries == 1
             dashboard.entries[line('$')] = line
+            execute 'nnoremap <buffer><silent><nowait> ' index ':call OpenBuffers(' .. index .. ')<cr>'
         endif
+        index += 1
     endfor
 enddef
 
