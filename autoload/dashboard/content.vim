@@ -21,7 +21,7 @@ def PaintHeader()
     PaddingLines(['', ''], padding)
 enddef
 
-var dashboard = {'entries': {}, 'offset': 0}
+var dashboard = {'entries': {}, 'offset': 0, minRow: 0, maxRow: 0, minColumn: 0, maxColumn: 0}
 
 def PaddingLines(lines: list<string>, padding: number )
     for line in lines
@@ -65,6 +65,27 @@ def g:OpenBuffers(index: number = -1)
             execute 'edit ' .. filePath
         endif
 enddef
+
+def g:LimitCursor()
+    var maxRow = dashboard.maxRow
+    var minRow = dashboard.minRow
+    var minColumn = dashboard.minColumn
+    var maxColumn = dashboard.maxColumn
+    echom "LimitCursor"
+    var cursor = getcurpos()
+    var row = cursor[1]
+    var column = cursor[2]
+    if row < minRow
+        call cursor(minRow, column)
+    elseif row > maxRow
+        call cursor(maxRow, column)
+    elseif column < minColumn
+        call cursor(row, minColumn)
+    elseif column > maxColumn
+        call cursor(row, maxColumn)
+    endif
+enddef
+
 
 def GetRecentFiles(): list<string>
     var recent_files = v:oldfiles
@@ -110,6 +131,13 @@ def PrintRecentFiles(initEntries: number)
         endif
         index += 1
     endfor
+    echomsg 'Dashboard loaded ' .. &filetype
+    dashboard.minRow = line('$') - len(lines)
+    dashboard.maxRow = line('$')
+    dashboard.minColumn = padding + 2
+    dashboard.maxColumn = padding + 2
+
+    autocmd dashboard CursorMoved <buffer> :call g:LimitCursor()
 enddef
 
 def DashBoardEntryFormat(entry_path: string): string
