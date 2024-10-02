@@ -71,7 +71,6 @@ def g:LimitCursor()
     var minRow = dashboard.minRow
     var minColumn = dashboard.minColumn
     var maxColumn = dashboard.maxColumn
-    echom "LimitCursor"
     var cursor = getcurpos()
     var row = cursor[1]
     var column = cursor[2]
@@ -131,7 +130,6 @@ def PrintRecentFiles(initEntries: number)
         endif
         index += 1
     endfor
-    echomsg 'Dashboard loaded ' .. &filetype
     dashboard.minRow = line('$') - len(lines)
     dashboard.maxRow = line('$')
     dashboard.minColumn = padding + 2

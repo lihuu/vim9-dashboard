@@ -7,6 +7,7 @@ syntax match DashboardOperationFile  / Files\[f\]/
 syntax match DashboardOperationConfig  / Config\[c\]/
 syntax match DashboardOperationHistory  / History\[h\]/
 syntax match DashboardOperationQuit  / Quit\[q\]/
+syntax match DashboardRecentFileIndex /\[\d\]/
 
 
 highlight default link RecentFilesTitle Title
@@ -16,6 +17,7 @@ highlight default link DirectoryName Statement
 
 highlight DashboardOperationEdit guifg=#FA8D07 ctermfg=#FA8D07
 highlight DashboardOperationFile guifg=#07FAB1 ctermfg=#07FAB1
+highlight DashboardRecentFileIndex guifg=#07FAB1 ctermfg=#07FAB1
 highlight DashboardOperationConfig guifg=#0897FD ctermfg=#0897FD
 highlight DashboardOperationHistory guifg=#FAE207 ctermfg=#FAE207
 highlight DashboardOperationQuit guifg=#9E64FA ctermfg=#9E64FA
